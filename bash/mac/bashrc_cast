@@ -1,0 +1,89 @@
+#!/bin/bash -x
+
+# Common environment settings for Cast development
+# Author: Prameet Shah
+
+# -------------------------------------------------------------------------
+# Functions for Android Cast SDK
+# -------------------------------------------------------------------------
+function goto() {
+  if [[ "" == "$1" ]]; then
+    echo ERROR: File Name Missing
+    return
+  fi
+
+  mountAndroid
+
+  unset GMS_CORE
+  unset GMS_CORE_BASE
+  TYPE=${1,,}
+  if (
+  case $TYPE in
+    manchego)
+      export GMS_CORE_BASE=/Volume/android/
+      ;;
+    manchego-release)
+      export GMS_CORE_BASE=/Volume/android/
+      ;;
+    nacho)
+      export GMS_CORE_BASE=/Volume/android/
+      ;;
+    nacho-release)
+      export GMS_CORE_BASE=/Volume/android/
+      ;;
+    *)
+      echo "Unknown branch type: ${1}"
+      return
+  esac
+
+  export GMS_CORE_BASE+=ub-gcore-${TYPE}/
+  export GMS_CORE=${TYPE~}
+  setupsdk
+  echo Finished setting up environment for \"$GMS_CORE\";
+}
+
+function gotoGmsCore() {
+  if [[ "" == "$GMS_CORE" ]]; then
+    echo "Need to run goto<branch_type> first. (i.e. gotomanchego)"
+    return;
+  fi
+  cd ${GMS_CORE_BASE}vendor/unbundled_google/packages/OneUp/
+}
+
+function setupsdk() {
+  if [[ "" == "$GMS_CORE" ]]; then
+    echo "Need to run goto<branch_type> first. (i.e. gotomanchego)"
+    return;
+  fi
+  cd ${GMS_CORE_BASE}
+  source ${GMS_CORE_BASE}build/envsetup.sh
+  tapas GmsCore DemoCastPlayer CastEndToEndTest GmsCoreTests TestCastClient CastTicTacToe GCastV2 ChromecastMirrorApp
+}
+
+function buildGmsCore() {
+  if [[ "" == "$GMS_CORE" ]]; then
+    echo "Need to run goto<branch_type> first. (i.e. gotomanchego)"
+    return;
+  fi
+  setupsdk
+  echo $(printf "%*s" "$COLUMNS" | tr " " "-")
+  echo BUILDING ${GMS_CORE}
+  ./gradlew --parallel -s 2>&1 | tee /tmp/build.${GMS_CORE}.log
+  echo $(printf "%*s" "$COLUMNS" | tr " " "-")
+}
+
+# -------------------------------------------------------------------------
+# Functions for ADB
+# -------------------------------------------------------------------------
+function readb()
+{
+  local ECHO=
+  if [ "-h" = "$1" ]; then
+    ECHO=echo
+  fi
+
+  $ECHO killall adb
+  $ECHO adb root
+  $ECHO adb shell top
+}
+

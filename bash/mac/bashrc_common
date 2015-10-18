@@ -1,0 +1,66 @@
+# Common .bashrc settings
+# Author: Prameet Shah
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    # WARNING: enabling this can cause multi-second delays due to NFS latency
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep -n --color=auto'
+    alias egrep='egrep -n --color=auto'
+    alias rgrep='rgrep -n --color=auto'
+fi
+
+# 'ls' aliases
+alias ls='ls -G -F'
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+alias gg='git grep -n'
+alias grepr='grep -n -r --color=always --exclude-dir=.git --exclude-dir=.svn'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# -------------------------------------------------------------------------
+# Various Env Settings
+# -------------------------------------------------------------------------
+
+export EDITOR='vi'
+
+# Local home
+export BASE_SRCROOT2="/usr/local/disk2"
+export BASE_SRCROOT="/usr/local/google/home/${USER}"
+
+function findfile()
+{
+#  echo \* find . -name \"$1\"
+ 
+  if [[ "" == "$1" ]]; then
+    echo ERROR: File Name Missing
+  else
+    find . -name "$1"
+  fi
+}
+
+# Enable IBus for IME support
+# export GTK_IM_MODULE=ibus
+# export XMODIFIERS=@im=ibus
+# export QT_IM_MODULE=ibus
+
+stashgrep() {
+  for i in `git stash list | awk -F ':' '{print $1}'`; do
+    git stash show --no-ext-diff -p $i | grep -H --label="$i" "$1"
+  done
+}
+
